@@ -1,7 +1,10 @@
+/*global google */
 import React, { Component } from "react";
 import { Segment, Form, Button, Grid, Header } from "semantic-ui-react";
 import cuid from "cuid";
 import { reduxForm, Field } from "redux-form";
+import {geocodeByAddress, getLatLng} from 'react-places-autocomplete';
+import Script from 'react-load-script'
 
 import {
   composeValidators,
@@ -20,7 +23,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import DateInput from '../../../app/common/form/DateInput'
 import moment from 'moment';
-
+import PlaceInput from '../../../app/common/form/PlaceInput';
 
 const notify = () => toast("Wow so easy !")
 
@@ -70,9 +73,46 @@ const validate = combineValidators({
   date: isRequired('date')
 });
 
+
 class EventForm extends Component {
+  state = {
+      cityLatLng: {},
+      venueLatLng: {},
+      scriptLoaded: false
+  }
+
+  handleScriptLoaded = () => this.setState({ scriptLoaded: true });
+
+
+  handleCitySelect = (selectedCity) => {
+    geocodeByAddress(selectedCity)
+      .then(results => getLatLng(results[0]))
+      .then(lating => {
+          this.setState({
+            cityLatLng: lating
+          })
+      })
+      .then(()=>{
+        this.props.change('city', selectedCity)
+      })
+  };
+
+  handleVenueSelect = (selectedVenue) => {
+    geocodeByAddress(selectedVenue)
+      .then(results => getLatLng(results[0]))
+      .then(latlng => {
+          this.setState({
+            venueLatLng: latlng
+          })
+      })
+      .then(()=>{
+        this.props.change('venue', selectedVenue)
+      })
+  };
+
   onFormSubmit = values => {
-    values.date = moment(values.date).format()
+    values.date = moment(values.date).format();
+    values.venueLatLng = this.state.venueLatLng;
     if (this.props.initialValues.id) {
       this.props.updateEvent(values);
       this.props.history.goBack();
@@ -87,6 +127,8 @@ class EventForm extends Component {
       this.props.createEvent(newEvent);
       this.props.history.push("/events");
     }
+
+    
 
     
   };
@@ -109,6 +151,10 @@ class EventForm extends Component {
 
     return (
       <Grid>
+         <Script
+          url="https://maps.googleapis.com/maps/api/js?key=AIzaSyA9lM1FW4ClzpFADWGeJhyjTS2Ym0e6RxY&libraries=places"
+          onLoad={this.handleScriptLoaded}
+        />
         <Grid.Column width={10}>
           <Segment>
             <Header sub color="teal" content="Event Details" />
@@ -131,6 +177,7 @@ class EventForm extends Component {
               <Field
                 name="description"
                 type="text"
+                row={3}
                 component={TextArea}
                 placeholder="Tell us about your event"
               />
@@ -138,16 +185,24 @@ class EventForm extends Component {
               <Field
                 name="city"
                 type="text"
-                rows={3}
-                component={TextInput}
+                component={PlaceInput}
+                options={{types: ['(cities)']}}
                 placeholder="Event City"
+                onSelect={this.handleCitySelect}
               />
+              {this.state.scriptLoaded && 
               <Field
                 name="venue"
                 type="text"
-                component={TextInput}
+                options={{
+                  location: new google.maps.LatLng(this.state.cityLatLng),
+                  radius: 1000,
+                  types:['establishment']
+                }}
+                component={PlaceInput}
                 placeholder="Event Venue"
-              />
+                onSelect={this.handleVenueSelect}
+              />}
               <Field
                 name="date"
                 type="text"
@@ -156,11 +211,17 @@ class EventForm extends Component {
                 timeFormat='HH:mm'
                 showTimeSelect
                 placeholder="Event Date"
+                peekNextMonth
+                showMonthDropdown
+                showYearDropdown
+                dropdownMode="select"
               />
 
-              <Button disabled={invalid || submitting || pristine}  positive type="submit">
+              <Button disabled={invalid || submitting || pristine}   positive type="submit">
                 Submit
-              </Button>
+              </Button >
+              <ToastContainer autoClose={2000} />
+
               <Button onClick={this.props.history.goBack} type="button">
                 Cancel
               </Button>
