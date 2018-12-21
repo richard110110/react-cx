@@ -81,6 +81,7 @@ export const deletePhoto = (photo) =>
         doc: user.uid,
         subcollections: [{collection: 'photos', doc: photo.id}]
       })
+
     } catch (error){
       console.log(error);
       throw new Error('Problem deleting the photo')
@@ -100,7 +101,4 @@ export const deletePhoto = (photo) =>
         throw new Error('Problem setting main photo')
       }
     }
-
-
-
 

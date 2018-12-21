@@ -1,14 +1,11 @@
-import React, { Component } from "react";
-import { Grid } from "semantic-ui-react";
-import EventList from "../EventList/EventList";
-import { connect } from "react-redux";
-
-import { deleteEvent } from "../eventActions";
-import LoadingComponent from "../../../app/layout/LoadingComponent";
-import EventActivity from "../EventActivity/EventActivity";
-import { firestoreConnect } from "react-redux-firebase";
-
-
+import React, { Component } from 'react';
+import { Grid } from 'semantic-ui-react';
+import { connect } from 'react-redux';
+import { firestoreConnect } from 'react-redux-firebase';
+import { deleteEvent } from '../eventActions';
+import EventList from '../EventList/EventList';
+import LoadingComponent from '../../../app/layout/LoadingComponent';
+import EventActivity from '../EventActivity/EventActivity';
 
 const mapState = state => ({
   events: state.firestore.ordered.events,
@@ -21,16 +18,13 @@ const actions = {
 
 class EventDashboard extends Component {
   handleDeleteEvent = eventId => () => {
-    // const updatedEvents = this.state.events.filter(e => e.id !== eventId);
-    // this.setState({
-    //   events: updatedEvents
-    // });
     this.props.deleteEvent(eventId);
   };
 
   render() {
     const { events, loading } = this.props;
     if (loading) return <LoadingComponent inverted={true} />;
+
     return (
       <Grid>
         <Grid.Column width={10}>
@@ -43,8 +37,7 @@ class EventDashboard extends Component {
     );
   }
 }
-export default connect(mapState,actions)(
-  firestoreConnect([{ collection: "events" }])(EventDashboard)
-  );
 
-
+export default connect(mapState, actions)(
+  firestoreConnect([{ collection: 'events' }])(EventDashboard)
+);
