@@ -1,13 +1,13 @@
-import React, { Component } from "react";
-import { connect } from "react-redux";
-import { withFirestore } from "react-redux-firebase";
-import { Grid } from "semantic-ui-react";
-import EventDetailedHeader from "./EventDetailedHeader";
-import EventDetailedInfo from "./EventDetailedInfo";
-import EventDetailedChat from "./EventDetailedChat";
-import EventDetailedSidebar from "./EventDetailedSidebar";
-import { objectToArray } from "../../../app/common/util/helpers";
-import { goingToEvent, cancelGoingToEvent } from "../../user/userActions";
+import React, { Component } from 'react';
+import { Grid } from 'semantic-ui-react';
+import { connect } from 'react-redux';
+import { withFirestore } from 'react-redux-firebase';
+import EventDetailedHeader from './EventDetailedHeader';
+import EventDetailedInfo from './EventDetailedInfo';
+import EventDetailedChat from './EventDetailedChat';
+import EventDetailedSidebar from './EventDetailedSidebar';
+import { objectToArray } from '../../../app/common/util/helpers';
+import { goingToEvent, cancelGoingToEvent } from '../../user/userActions';
 
 const mapState = state => {
   let event = {};
@@ -31,11 +31,6 @@ class EventDetailedPage extends Component {
   async componentDidMount() {
     const { firestore, match } = this.props;
     await firestore.setListener(`events/${match.params.id}`);
-    // if(!event.exists){
-    //   history.push('/events');
-    //   toastr.error('Sorry', 'Event not found');
-
-    // }
   }
 
   async componentWillUnmount() {
@@ -49,7 +44,6 @@ class EventDetailedPage extends Component {
       event && event.attendees && objectToArray(event.attendees);
     const isHost = event.hostUid === auth.uid;
     const isGoing = attendees && attendees.some(a => a.id === auth.uid);
-
     return (
       <Grid>
         <Grid.Column width={10}>
@@ -57,7 +51,7 @@ class EventDetailedPage extends Component {
             event={event}
             isHost={isHost}
             isGoing={isGoing}
-            goingtoEvent={goingToEvent}
+            goingToEvent={goingToEvent}
             cancelGoingToEvent={cancelGoingToEvent}
           />
           <EventDetailedInfo event={event} />
@@ -71,9 +65,4 @@ class EventDetailedPage extends Component {
   }
 }
 
-export default withFirestore(
-  connect(
-    mapState,
-    actions
-  )(EventDetailedPage)
-);
+export default withFirestore(connect(mapState, actions)(EventDetailedPage));
