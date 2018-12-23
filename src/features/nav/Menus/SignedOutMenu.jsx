@@ -1,5 +1,5 @@
 import React from 'react'
-import {Menu, Button} from 'semantic-ui-react';
+import { Menu, Button } from 'semantic-ui-react'
 
 const SignedOutMenu = ({signIn, register}) => {
   return (
@@ -10,10 +10,10 @@ const SignedOutMenu = ({signIn, register}) => {
       basic
       inverted
       content="Register"
-      style={{ marginLeft: "0.5em" }}
+      style={{ marginLeft: '0.5em' }}
     />
   </Menu.Item>
-  );
-};
+  )
+}
 
 export default SignedOutMenu
