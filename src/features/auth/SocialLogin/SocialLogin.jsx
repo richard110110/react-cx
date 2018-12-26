@@ -3,7 +3,7 @@ import { Button, Icon } from 'semantic-ui-react';
 
 const SocialLogin = ({socialLogin}) => {
   return (
-    <div>
+    <div> 
       <Button
         onClick={() => socialLogin('facebook')} 
         type="button"
