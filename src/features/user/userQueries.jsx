@@ -15,10 +15,10 @@ export const userDetailedQuery = ({ auth, userUid, match }) => {
       {
         collection: 'users',
         doc: auth.uid,
-        subcollections: [{ collection: 'following', doc: match.params.id}],
+        subcollections: [{collection: 'following', doc: match.params.id}],
         storeAs: 'following'
       }
-    ]
+    ];
   } else {
     return [
       {

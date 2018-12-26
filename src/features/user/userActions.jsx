@@ -129,12 +129,12 @@ export const goingToEvent = event => async (dispatch, getState) => {
   dispatch(asyncActionStart())
   const firestore = firebase.firestore();
   const user = firebase.auth().currentUser;
-  const photoURL = getState().firebase.profile.photoURL;
+  const profile = getState().firebase.profile;
   const attendee = {
     going: true,
     joinDate: Date.now(),
-    photoURL: photoURL || '/assets/user.png',
-    displayName: user.displayName,
+    photoURL: profile.photoURL || '/assets/user.png',
+    displayName: profile.displayName,
     host: false
   };
   try {
@@ -241,7 +241,8 @@ export const followUser = userToFollow => async (dispatch, getState, { getFirest
         doc: user.uid,
         subcollections: [{ collection: 'following', doc: userToFollow.id }]
       },
-      following
+      following,
+      toastr.success('Success', 'You have followed ' + following.displayName)
     );
   } catch (error) {
     console.log(error);

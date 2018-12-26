@@ -1,8 +1,7 @@
 import React from "react";
-import { Segment, Image, Item, Header, Button } from "semantic-ui-react";
+import { Segment, Image, Item, Header, Button, Label } from "semantic-ui-react";
 import { Link } from "react-router-dom";
 import format from "date-fns/format";
-import { openModal } from "../../modals/modalActions";
 
 const eventImageStyle = {
   filter: "brightness(30%)"
@@ -18,14 +17,14 @@ const eventImageTextStyle = {
 };
 
 const EventDetailedHeader = ({
+  openModal,
+  authenticated,
   loading,
   event,
   isHost,
   isGoing,
   goingToEvent,
-  cancelGoingToEvent,
-  authenticated,
-  openModal
+  cancelGoingToEvent
 }) => {
   let eventDate;
   if (event.date) {
@@ -62,29 +61,35 @@ const EventDetailedHeader = ({
       <Segment attached="bottom">
         {!isHost && (
           <div>
-            {isGoing && 
+            {isGoing && !event.cancelled && (
               <Button onClick={() => cancelGoingToEvent(event)}>
                 Cancel My Place
               </Button>
-            }
-            {!isGoing && authenticated && (
-              <Button
-              loading={loading}
-              onClick={() => goingToEvent(event)}
-              color="teal"
-            >
-              JOIN THIS EVENT
-            </Button>)}
-
-            {!authenticated &&(
-            <Button
-              loading={loading}
-              onClick={() => openModal('UnauthModal')}
-              color="teal"
-            >
-              JOIN THIS EVENT
-            </Button>
             )}
+
+            {!isGoing && authenticated && !event.cancelled && (
+              <Button
+                loading={loading}
+                onClick={() => goingToEvent(event)}
+                color="teal"
+              >
+                JOIN THIS EVENT
+              </Button>
+            )}
+
+            {!authenticated && !event.cancelled &&  (
+              <Button
+                loading={loading}
+                onClick={() => openModal("UnauthModal")}
+                color="teal"
+              >
+                JOIN THIS EVENT
+              </Button>
+            )}
+
+            {event.cancelled && !isHost &&
+            <Label size='large' color='red' content='This event has been cancelled'/>}
+
           </div>
         )}
 

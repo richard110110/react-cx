@@ -1,11 +1,11 @@
-import React, { Component } from "react";
-import { Grid, Loader } from "semantic-ui-react";
-import { connect } from "react-redux";
-import { firestoreConnect } from "react-redux-firebase";
-import { getEventsForDashboard } from "../eventActions";
-import EventList from "../EventList/EventList";
-import LoadingComponent from "../../../app/layout/LoadingComponent";
-import EventActivity from "../EventActivity/EventActivity";
+import React, { Component } from 'react';
+import { Grid, Loader } from 'semantic-ui-react';
+import { connect } from 'react-redux';
+import { firestoreConnect } from 'react-redux-firebase';
+import { getEventsForDashboard } from '../eventActions';
+import EventList from '../EventList/EventList';
+import LoadingComponent from '../../../app/layout/LoadingComponent';
+import EventActivity from '../EventActivity/EventActivity';
 
 const query = [
   {
@@ -35,6 +35,7 @@ class EventDashboard extends Component {
 
   async componentDidMount() {
     let next = await this.props.getEventsForDashboard();
+
     if (next && next.docs && next.docs.length > 1) {
       this.setState({
         moreEvents: true,
@@ -55,7 +56,6 @@ class EventDashboard extends Component {
     const { events } = this.props;
     let lastEvent = events && events[events.length - 1];
     let next = await this.props.getEventsForDashboard(lastEvent);
-    console.log(next);
     if (next && next.docs && next.docs.length <= 1) {
       this.setState({
         moreEvents: false
@@ -67,7 +67,7 @@ class EventDashboard extends Component {
 
   render() {
     const { loading, activities } = this.props;
-    const {moreEvents, loadedEvents} = this.state;
+    const { moreEvents, loadedEvents } = this.state;
     if (this.state.loadingInitial) return <LoadingComponent inverted={true} />;
 
     return (
@@ -80,11 +80,11 @@ class EventDashboard extends Component {
             events={loadedEvents}
             getNextEvents={this.getNextEvents}
           />
-         
-         </div>
+          </div>
+
         </Grid.Column>
         <Grid.Column width={6}>
-          <EventActivity activities={activities} contextRef={this.state.contextRef}/>
+          <EventActivity activities={activities} contextRef={this.state.contextRef} />
         </Grid.Column>
         <Grid.Column width={10}>
           <Loader active={loading}/>
@@ -94,7 +94,4 @@ class EventDashboard extends Component {
   }
 }
 
-export default connect(
-  mapState,
-  actions
-)(firestoreConnect(query)(EventDashboard));
+export default connect(mapState, actions)(firestoreConnect(query)(EventDashboard));

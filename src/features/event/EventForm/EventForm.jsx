@@ -1,30 +1,25 @@
-/*global google */
+/*global google*/
 import React, { Component } from "react";
-import { Segment, Form, Button, Grid, Header } from "semantic-ui-react";
+import { connect } from "react-redux";
 import { reduxForm, Field } from "redux-form";
-import { geocodeByAddress, getLatLng } from "react-places-autocomplete";
+import { withFirestore } from "react-redux-firebase";
 import Script from "react-load-script";
-
+import { geocodeByAddress, getLatLng } from "react-places-autocomplete";
+import { Segment, Form, Button, Grid, Header } from "semantic-ui-react";
 import {
   composeValidators,
   combineValidators,
   isRequired,
   hasLengthGreaterThan
 } from "revalidate";
-import { connect } from "react-redux";
-import { withFirestore } from "react-redux-firebase";
 import { createEvent, updateEvent, cancelToggle } from "../eventActions";
 import TextInput from "../../../app/common/form/TextInput";
 import TextArea from "../../../app/common/form/TextArea";
 import SelectInput from "../../../app/common/form/SelectInput";
-
-import "react-toastify/dist/ReactToastify.css";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import DateInput from "../../../app/common/form/DateInput";
 import PlaceInput from "../../../app/common/form/PlaceInput";
 
-const mapState = state => {
+const mapState = (state, ownProps) => {
   let event = {};
 
   if (state.firestore.ordered.events && state.firestore.ordered.events[0]) {
@@ -54,8 +49,7 @@ const category = [
 ];
 
 const validate = combineValidators({
-  title: isRequired({ message: "Please provide a title" }),
-
+  title: isRequired({ message: "The event title is required" }),
   category: isRequired({ message: "Please provide a category" }),
   description: composeValidators(
     isRequired({ message: "Please enter a description" }),
@@ -78,17 +72,11 @@ class EventForm extends Component {
   async componentDidMount() {
     const { firestore, match } = this.props;
     await firestore.setListener(`events/${match.params.id}`);
-    // if(event.exists) {
-    //   this.setState({
-    //     venueLatLng: event.data().venueLatLng
-    //   })
-    // }
   }
 
   async componentWillUnmount() {
     const { firestore, match } = this.props;
     await firestore.unsetListener(`events/${match.params.id}`);
-
   }
 
   handleScriptLoaded = () => this.setState({ scriptLoaded: true });
@@ -96,9 +84,9 @@ class EventForm extends Component {
   handleCitySelect = selectedCity => {
     geocodeByAddress(selectedCity)
       .then(results => getLatLng(results[0]))
-      .then(lating => {
+      .then(latlng => {
         this.setState({
-          cityLatLng: lating
+          cityLatLng: latlng
         });
       })
       .then(() => {
@@ -119,13 +107,13 @@ class EventForm extends Component {
       });
   };
 
-  onFormSubmit = async values => {
+  onFormSubmit = values => {
     values.venueLatLng = this.state.venueLatLng;
     if (this.props.initialValues.id) {
       if (Object.keys(values.venueLatLng).length === 0) {
         values.venueLatLng = this.props.event.venueLatLng;
       }
-     await this.props.updateEvent(values);
+      this.props.updateEvent(values);
       this.props.history.goBack();
     } else {
       this.props.createEvent(values);
@@ -133,27 +121,24 @@ class EventForm extends Component {
     }
   };
 
-  onInputChange = evt => {
-    const newEvent = this.state.event;
-    newEvent[evt.target.name] = evt.target.value;
-    this.setState({
-      event: newEvent
-    });
-  };
-
   render() {
-    const { loading, invalid, submitting, pristine, event, cancelToggle } = this.props;
-
+    const {
+      invalid,
+      submitting,
+      pristine,
+      event,
+      cancelToggle,
+      loading
+    } = this.props;
     return (
       <Grid>
         <Script
-          url="https://maps.googleapis.com/maps/api/js?key=AIzaSyA9lM1FW4ClzpFADWGeJhyjTS2Ym0e6RxY&libraries=places"
+          url="https://maps.googleapis.com/maps/api/js?key=AIzaSyC1Oy3Ic6JyE6RR4eEbEFw2T-ynXjjWzTc&libraries=places"
           onLoad={this.handleScriptLoaded}
         />
         <Grid.Column width={10}>
           <Segment>
             <Header sub color="teal" content="Event Details" />
-
             <Form onSubmit={this.props.handleSubmit(this.onFormSubmit)}>
               <Field
                 name="title"
@@ -166,36 +151,35 @@ class EventForm extends Component {
                 type="text"
                 component={SelectInput}
                 options={category}
-                multiple={true}
                 placeholder="What is your event about"
               />
               <Field
                 name="description"
                 type="text"
-                row={3}
                 component={TextArea}
+                rows={3}
                 placeholder="Tell us about your event"
               />
-              <Header sub color="teal" content="Event Location Details" />
+              <Header sub color="teal" content="Event Location details" />
               <Field
                 name="city"
                 type="text"
                 component={PlaceInput}
                 options={{ types: ["(cities)"] }}
-                placeholder="Event City"
+                placeholder="Event city"
                 onSelect={this.handleCitySelect}
               />
               {this.state.scriptLoaded && (
                 <Field
                   name="venue"
                   type="text"
+                  component={PlaceInput}
                   options={{
                     location: new google.maps.LatLng(this.state.cityLatLng),
                     radius: 1000,
                     types: ["establishment"]
                   }}
-                  component={PlaceInput}
-                  placeholder="Event Venue"
+                  placeholder="Event venue"
                   onSelect={this.handleVenueSelect}
                 />
               )}
@@ -206,13 +190,8 @@ class EventForm extends Component {
                 dateFormat="YYYY-MM-DD HH:mm"
                 timeFormat="HH:mm"
                 showTimeSelect
-                placeholder="Event Date"
-                peekNextMonth
-                showMonthDropdown
-                showYearDropdown
-                dropdownMode="select"
+                placeholder="Date and time of event"
               />
-
               <Button
                 loading={loading}
                 disabled={invalid || submitting || pristine}
@@ -221,18 +200,21 @@ class EventForm extends Component {
               >
                 Submit
               </Button>
-              <ToastContainer autoClose={2000} />
-
-              <Button disabled={loading} onClick={this.props.history.goBack} type="button">
+              <Button
+                disabled={loading}
+                onClick={this.props.history.goBack}
+                type="button"
+              >
                 Cancel
               </Button>
+              {event.id &&
               <Button
                 onClick={() => cancelToggle(!event.cancelled, event.id)}
                 type="button"
                 color={event.cancelled ? "green" : "red"}
                 floated="right"
-                content={event.cancelled ? "Reactivate Event" : "Cancel event"}
-              />
+                content={event.cancelled ? "Reactivate Event" : "Cancel Event"}
+              />}
             </Form>
           </Segment>
         </Grid.Column>
